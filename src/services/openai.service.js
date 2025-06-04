@@ -5,8 +5,7 @@ const generateImage = async () => {
   const client = new OpenAI();
   const img = await client.images.generate({
     model: 'gpt-image-1',
-    prompt:
-      'Generate a picture of a cat of random color and breed in a random city in any parts of the world. Also include a description where an geo expert tries to guess the location of that random city.',
+    prompt: 'Generate a picture of a cat of random color and breed in a random city in any parts of the world.',
     n: 1,
     size: '1024x1024',
     quality: 'medium',
