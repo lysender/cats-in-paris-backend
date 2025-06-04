@@ -1,26 +1,25 @@
-const assert = require('assert');
 const fs = require('fs');
 const OpenAI = require('openai');
 
 const generateImage = async () => {
-  const openai = new OpenAI();
-  const response = await openai.responses.create({
-    model: 'gpt-4.1-nano',
-    input:
+  const client = new OpenAI();
+  const img = await client.images.generate({
+    model: 'gpt-image-1',
+    prompt:
       'Generate a picture of a cat of random color and breed in a random city in any parts of the world. Also include a description where an geo expert tries to guess the location of that random city.',
-    tools: [{ type: 'image_generation' }],
+    n: 1,
+    size: '1024x1024',
+    quality: 'medium',
+    output_format: 'jpeg',
   });
 
-  const imgResponse = response.output.find((item) => item.type === 'image_generation_call');
-  assert.ok(imgResponse, 'Image response is required.');
+  const filename = `images/cat-${img.created}.jpg`;
 
-  const filename = `images/cat-${imgResponse.id}.jpg`;
-
-  const imageBase64 = imgResponse.result;
-  fs.writeFileSync(filename, Buffer.from(imageBase64, 'base64'));
+  const imgBuffer = Buffer.from(img.data[0].b64_json, 'base64');
+  fs.writeFileSync(filename, imgBuffer);
 
   // Feed it back to ai for expert guess
-  const guessResponse = await openai.responses.create({
+  const guessResponse = await client.responses.create({
     model: 'gpt-4.1-nano',
     input: [
       {
@@ -32,7 +31,7 @@ const generateImage = async () => {
           },
           {
             type: 'input_image',
-            image_url: `data:image/jpeg;base64,${imageBase64}`,
+            image_url: `data:image/jpeg;base64,${img.data[0].b64_json}`,
           },
         ],
       },
